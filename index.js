@@ -28,18 +28,19 @@ async function run() {
       .db("medicalCampManagementSystem")
       .collection("users");
 
-    app.post("/user", async (req, res) => {
+    app.put("/user", async (req, res) => {
       const user = req.body;
 
-      const query = {email: user.email}
-      
-      const isExistUser = await usersCollection.findOne(query)
+      const query = { email: user.email };
+      const options = { upsert: true };
 
-      if(isExistUser){
-        return res.send({message: "User already exist!"})
-      }
-      const result = await usersCollection.insertOne(user)
-      res.send(result)
+      const updateDoc = {
+        $set: {
+          ...user,
+        },
+      };
+      const result = await usersCollection.updateOne(query, updateDoc, options);
+      res.send(result);
     });
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
