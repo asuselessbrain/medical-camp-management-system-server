@@ -42,9 +42,12 @@ async function run() {
       const result = await usersCollection.updateOne(query, updateDoc, options);
       res.send(result);
     });
+    
+
+    // TODO: add jwt verification and admin verification
 
     app.get("/users", async(req, res)=>{
-      const result = await usersCollection.find().toArray()
+      const result = await usersCollection.find().sort({_id: -1}).toArray()
       res.send(result)
     })
     // Send a ping to confirm a successful connection
