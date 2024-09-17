@@ -42,14 +42,32 @@ async function run() {
       const result = await usersCollection.updateOne(query, updateDoc, options);
       res.send(result);
     });
-    
 
     // TODO: add jwt verification and admin verification
+    // get user from database
 
-    app.get("/users", async(req, res)=>{
-      const result = await usersCollection.find().sort({_id: -1}).toArray()
-      res.send(result)
-    })
+    app.get("/users", async (req, res) => {
+      const result = await usersCollection.find().sort({ _id: -1 }).toArray();
+      res.send(result);
+    });
+
+    // TODO: add jwt verification and admin verification
+    // update user role
+
+    app.patch("/update-user/:email", async (req, res) => {
+      const email = req.params.email;
+      const { role } = req.body;
+
+      const query = { email: email };
+      const updateDoc = {
+        $set: {
+          role: role,
+        },
+      };
+      const result = await usersCollection.updateOne(query, updateDoc);
+      res.send(result);
+    });
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
