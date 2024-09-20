@@ -28,6 +28,20 @@ async function run() {
       .db("medicalCampManagementSystem")
       .collection("users");
 
+    const campCollection = client
+      .db("medicalCampManagementSystem")
+      .collection("camp");
+
+    // add camp related api
+
+    app.post("/add-camp", async (req, res) => {
+      const camp = req.body;
+
+      const result = await campCollection.insertOne(camp);
+
+      res.send(result);
+    });
+
     app.put("/user", async (req, res) => {
       const user = req.body;
 
