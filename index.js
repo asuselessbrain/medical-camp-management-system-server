@@ -42,6 +42,21 @@ async function run() {
       res.send(result);
     });
 
+    // get camp related api
+
+    app.get("/my-added-camp/:email", async (req, res) => {
+      const email = req.params.email;
+
+      const query = { organizerEmail: email };
+
+      const result = await campCollection
+        .find(query)
+        .sort({ id: -1 })
+        .toArray();
+
+        res.send(result)
+    });
+
     app.put("/user", async (req, res) => {
       const user = req.body;
 
