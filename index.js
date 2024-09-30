@@ -32,6 +32,14 @@ async function run() {
       .db("medicalCampManagementSystem")
       .collection("camp");
 
+
+
+    //get popular camp related api
+    app.get("/popular-camp", async(req, res)=>{
+      const result = await campCollection.find().sort({participantCount: -1}).limit(6).toArray()
+      res.send(result)
+    })
+
     // add camp related api
 
     app.post("/add-camp", async (req, res) => {
@@ -42,7 +50,7 @@ async function run() {
       res.send(result);
     });
 
-    // get camp related api
+    // get my added camp related api
 
     app.get("/my-added-camp/:email", async (req, res) => {
       const email = req.params.email;
@@ -51,7 +59,7 @@ async function run() {
 
       const result = await campCollection
         .find(query)
-        .sort({ id: -1 })
+        .sort({ _id: -1 })
         .toArray();
 
       res.send(result);
