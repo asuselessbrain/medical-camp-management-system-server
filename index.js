@@ -5,7 +5,7 @@ const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const app = express();
 const port = 3000;
 
-app.use(cors());
+app.use(cors({ origin: ["http://localhost:5173"] }));
 app.use(express.json());
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.x6ipdw6.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
@@ -54,8 +54,39 @@ async function run() {
         .sort({ id: -1 })
         .toArray();
 
-        res.send(result)
+      res.send(result);
     });
+
+    // update camp related api
+
+    app.put("/update-camp/:id", async (req, res) => {
+      const id = req.params.id;
+      const camp = req.body;
+
+      const filter = { _id: new ObjectId(id) };
+      const option = { upsert: true };
+      const updateDoc = {
+        $set: {
+          ...camp,
+        },
+      };
+
+      const result = await campCollection.updateOne(filter, updateDoc, option);
+      res.send(result);
+    });
+
+    // delete camp related api
+
+    app.delete("/delete-my-camp/:id", async (req, res) => {
+      const id = req.params.id;
+
+      const query = { _id: new ObjectId(id) };
+
+      const result = await campCollection.deleteOne(query);
+      res.send(result);
+    });
+
+    // post user data in database related api created
 
     app.put("/user", async (req, res) => {
       const user = req.body;
