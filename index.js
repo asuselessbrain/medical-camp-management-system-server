@@ -42,6 +42,15 @@ async function run() {
       res.send(result);
     });
 
+    // get all camp related api
+    app.get("/all-camp", async (req, res) => {
+      const result = await campCollection
+        .find()
+        .sort({ _id: -1 })
+        .toArray();
+      res.send(result);
+    });
+
     // get camp details related api
 
     app.get("/view-camp-details/:id", async (req, res) => {
