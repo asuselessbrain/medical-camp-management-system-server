@@ -37,15 +37,25 @@ async function run() {
       const result = await campCollection
         .find()
         .sort({ participantCount: -1 })
-        .limit(6)
+        .limit(8)
         .toArray();
       res.send(result);
     });
 
     // get all camp related api
     app.get("/all-camp", async (req, res) => {
+      const query = req.query;
+
+      let filter = {}
+      if(query.search) {
+        filter.campName =  {$regex: query.search, $options: 'i' }
+      }
+      if(query.searchLocation){
+        filter.campLocation = {$regex: query.searchLocation, $options: 'i'}
+      }
+      
       const result = await campCollection
-        .find()
+        .find(filter)
         .sort({ _id: -1 })
         .toArray();
       res.send(result);
