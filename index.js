@@ -79,10 +79,15 @@ async function run() {
 
     app.post("/join-camp", async(req,res)=>{
       const participantDetails = req.body;
+      const campId = participantDetails.campId;
 
       const result = await participantDetailsCollection.insertOne(participantDetails)
 
-      res.send(result)
+      const query = {_id: new ObjectId(campId)}
+
+     const updatedResult = await campCollection.updateOne(query, {$inc: {participantCount : 1}})
+
+      res.send({result, updatedResult})
 
     })
 
