@@ -50,19 +50,26 @@ async function run() {
     app.get("/all-camp", async (req, res) => {
       const query = req.query;
 
-      let filter = {}
-      if(query.search) {
-        filter.campName =  {$regex: query.search, $options: 'i' }
+      let filter = {};
+      if (query.search) {
+        filter.campName = { $regex: query.search, $options: "i" };
       }
-      if(query.searchLocation){
-        filter.campLocation = {$regex: query.searchLocation, $options: 'i'}
+      if (query.searchLocation) {
+        filter.campLocation = { $regex: query.searchLocation, $options: "i" };
       }
-      
+
       const result = await campCollection
         .find(filter)
         .sort({ _id: -1 })
         .toArray();
       res.send(result);
+    });
+
+    // get total camp number related api
+
+    app.get("/get-total-camp-number", async (req, res) => {
+      const totalCamp = await campCollection.estimatedDocumentCount()
+      res.send({totalCamp})
     });
 
     // get camp details related api
@@ -77,19 +84,22 @@ async function run() {
 
     // post join camp related api
 
-    app.post("/join-camp", async(req,res)=>{
+    app.post("/join-camp", async (req, res) => {
       const participantDetails = req.body;
       const campId = participantDetails.campId;
 
-      const result = await participantDetailsCollection.insertOne(participantDetails)
+      const result = await participantDetailsCollection.insertOne(
+        participantDetails
+      );
 
-      const query = {_id: new ObjectId(campId)}
+      const query = { _id: new ObjectId(campId) };
 
-     const updatedResult = await campCollection.updateOne(query, {$inc: {participantCount : 1}})
+      const updatedResult = await campCollection.updateOne(query, {
+        $inc: { participantCount: 1 },
+      });
 
-      res.send({result, updatedResult})
-
-    })
+      res.send({ result, updatedResult });
+    });
 
     // add camp related api
 
