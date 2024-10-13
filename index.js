@@ -32,6 +32,10 @@ async function run() {
       .db("medicalCampManagementSystem")
       .collection("camp");
 
+    const participantDetailsCollection = client
+      .db("medicalCampManagementSystem")
+      .collection("participantDetails");
+
     //get popular camp related api
     app.get("/popular-camp", async (req, res) => {
       const result = await campCollection
@@ -70,6 +74,17 @@ async function run() {
       const result = await campCollection.findOne(query);
       res.send(result);
     });
+
+    // post join camp related api
+
+    app.post("/join-camp", async(req,res)=>{
+      const participantDetails = req.body;
+
+      const result = await participantDetailsCollection.insertOne(participantDetails)
+
+      res.send(result)
+
+    })
 
     // add camp related api
 
