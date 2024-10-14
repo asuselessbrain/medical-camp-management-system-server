@@ -49,6 +49,8 @@ async function run() {
     // get all camp related api
     app.get("/all-camp", async (req, res) => {
       const query = req.query;
+      const currentPage = parseInt(query.currentPage);
+      const numberOfCampPerPage = parseInt(query.numberOfCampPerPage);
 
       let filter = {};
       if (query.search) {
@@ -60,7 +62,7 @@ async function run() {
 
       const result = await campCollection
         .find(filter)
-        .sort({ _id: -1 })
+        .sort({ _id: -1 }).skip(currentPage*numberOfCampPerPage).limit(numberOfCampPerPage)
         .toArray();
       res.send(result);
     });
@@ -68,7 +70,18 @@ async function run() {
     // get total camp number related api
 
     app.get("/get-total-camp-number", async (req, res) => {
-      const totalCamp = await campCollection.estimatedDocumentCount()
+      const query = req.query;
+
+      let filter = {};
+      if (query.search) {
+        filter.campName = { $regex: query.search, $options: "i" };
+      }
+
+      if (query.searchLocation) {
+        filter.campLocation = { $regex: query.searchLocation, $options: "i" };
+      }
+
+      const totalCamp = await campCollection.countDocuments(filter)
       res.send({totalCamp})
     });
 
