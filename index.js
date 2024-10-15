@@ -62,7 +62,9 @@ async function run() {
 
       const result = await campCollection
         .find(filter)
-        .sort({ _id: -1 }).skip(currentPage*numberOfCampPerPage).limit(numberOfCampPerPage)
+        .sort({ _id: -1 })
+        .skip(currentPage * numberOfCampPerPage)
+        .limit(numberOfCampPerPage)
         .toArray();
       res.send(result);
     });
@@ -81,8 +83,8 @@ async function run() {
         filter.campLocation = { $regex: query.searchLocation, $options: "i" };
       }
 
-      const totalCamp = await campCollection.countDocuments(filter)
-      res.send({totalCamp})
+      const totalCamp = await campCollection.countDocuments(filter);
+      res.send({ totalCamp });
     });
 
     // get camp details related api
@@ -189,8 +191,16 @@ async function run() {
     // get user from database
 
     app.get("/users", async (req, res) => {
-      const result = await usersCollection.find().sort({ _id: -1 }).toArray();
+      const query = req.query;
+      const numberOfUsersPerPage = parseInt(query.numberOfUsersPerPage);
+      const currentPage = parseInt(query.currentPage);
+      const result = await usersCollection.find().sort({ _id: -1 }).skip(numberOfUsersPerPage*currentPage).limit(numberOfUsersPerPage).toArray();
       res.send(result);
+    });
+
+    app.get("/user-count", async (req, res) => {
+      const result = await usersCollection.estimatedDocumentCount();
+      res.send({ result });
     });
 
     // TODO: add jwt verification and admin verification
