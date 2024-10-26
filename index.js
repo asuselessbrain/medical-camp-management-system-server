@@ -22,7 +22,7 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    // await client.connect();
+    await client.connect();
 
     const usersCollection = client
       .db("medicalCampManagementSystem")
@@ -51,6 +51,22 @@ async function run() {
       const query = req.query;
       const currentPage = parseInt(query.currentPage);
       const numberOfCampPerPage = parseInt(query.numberOfCampPerPage);
+      const sortData = query.sortData;
+
+      let sortOption = {}
+
+      if(sortData === 'ascending'){
+        sortOption.campFee = 1
+      }
+      else if(sortData === 'descending'){
+        sortOption.campFee = -1
+      }
+      else if(sortData === 'sortByParticipant'){
+        sortOption.participantCount = -1
+      }
+      else{
+        sortOption = {_id: -1}
+      }
 
       let filter = {};
       if (query.search) {
@@ -62,7 +78,7 @@ async function run() {
 
       const result = await campCollection
         .find(filter)
-        .sort({ _id: -1 })
+        .sort(sortOption)
         .skip(currentPage * numberOfCampPerPage)
         .limit(numberOfCampPerPage)
         .toArray();
@@ -247,10 +263,10 @@ async function run() {
     });
 
     // Send a ping to confirm a successful connection
-    // await client.db("admin").command({ ping: 1 });
-    // console.log(
-    //   "Pinged your deployment. You successfully connected to MongoDB!"
-    // );
+    await client.db("admin").command({ ping: 1 });
+    console.log(
+      "Pinged your deployment. You successfully connected to MongoDB!"
+    );
   } finally {
     // Ensures that the client will close when you finish/error
     // await client.close();
