@@ -5,7 +5,7 @@ const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const app = express();
 const port = 3000;
 
-app.use(cors({ origin: ["http://localhost:5173"] }));
+app.use(cors({ origin: ["http://localhost:5173", "https://medicare-by-arfan.netlify.app/"] }));
 app.use(express.json());
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.x6ipdw6.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
