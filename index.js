@@ -5,7 +5,11 @@ const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const app = express();
 const port = 3000;
 
-app.use(cors({ origin: ["http://localhost:5173", "https://medicare-by-arfan.netlify.app"] }));
+app.use(
+  cors({
+    origin: ["http://localhost:5173", "https://medicare-by-arfan.netlify.app"],
+  })
+);
 app.use(express.json());
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.x6ipdw6.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
@@ -54,19 +58,16 @@ async function run() {
       const sortData = query.sortData;
       const currentData = new Date();
 
-      let sortOption = {}
+      let sortOption = {};
 
-      if(sortData === 'ascending'){
-        sortOption.campFee = 1
-      }
-      else if(sortData === 'descending'){
-        sortOption.campFee = -1
-      }
-      else if(sortData === 'sortByParticipant'){
-        sortOption.participantCount = -1
-      }
-      else{
-        sortOption = {_id: -1}
+      if (sortData === "ascending") {
+        sortOption.campFee = 1;
+      } else if (sortData === "descending") {
+        sortOption.campFee = -1;
+      } else if (sortData === "sortByParticipant") {
+        sortOption.participantCount = -1;
+      } else {
+        sortOption = { _id: -1 };
       }
 
       let filter = {};
@@ -77,7 +78,7 @@ async function run() {
         filter.campLocation = { $regex: query.searchLocation, $options: "i" };
       }
 
-      filter.campTime = {$gte: currentData.toISOString()}
+      filter.campTime = { $gte: currentData.toISOString() };
 
       const result = await campCollection
         .find(filter)
@@ -102,10 +103,24 @@ async function run() {
       if (query.searchLocation) {
         filter.campLocation = { $regex: query.searchLocation, $options: "i" };
       }
-      
-      filter.campTime = {$gte: currentDate.toISOString()}
+
+      filter.campTime = { $gte: currentDate.toISOString() };
       const totalCamp = await campCollection.countDocuments(filter);
       res.send({ totalCamp });
+    });
+
+    app.get("/previous-camp", async (req, res) => {
+      const currentDate = new Date();
+
+      let filter = {};
+
+      filter.campTime = { $lt: currentDate.toISOString() };
+      const result = await campCollection
+        .find(filter)
+        .sort({ participantCount: -1 })
+        .limit(8)
+        .toArray();
+      res.send(result);
     });
 
     // get camp details related api
@@ -215,25 +230,30 @@ async function run() {
       const query = req.query;
       const numberOfUsersPerPage = parseInt(query.numberOfUsersPerPage);
       const currentPage = parseInt(query.currentPage);
-      let filter = {}
-      if(query.searchByName){
-        filter.name = {$regex: query.searchByName, $options: 'i'}
+      let filter = {};
+      if (query.searchByName) {
+        filter.name = { $regex: query.searchByName, $options: "i" };
       }
-      if(query.searchByEmail){
-        filter.email = {$regex: query.searchByEmail, $options: 'i'}
+      if (query.searchByEmail) {
+        filter.email = { $regex: query.searchByEmail, $options: "i" };
       }
-      const result = await usersCollection.find(filter).sort({ _id: -1 }).skip(numberOfUsersPerPage*currentPage).limit(numberOfUsersPerPage).toArray();
+      const result = await usersCollection
+        .find(filter)
+        .sort({ _id: -1 })
+        .skip(numberOfUsersPerPage * currentPage)
+        .limit(numberOfUsersPerPage)
+        .toArray();
       res.send(result);
     });
 
     app.get("/user-count", async (req, res) => {
       const query = req.query;
-      let filter = {}
-      if(query.searchByName){
-        filter.name = {$regex: query.searchByName, $options: 'i'}
+      let filter = {};
+      if (query.searchByName) {
+        filter.name = { $regex: query.searchByName, $options: "i" };
       }
-      if(query.searchByEmail){
-        filter.email = {$regex: query.searchByEmail, $options: 'i'}
+      if (query.searchByEmail) {
+        filter.email = { $regex: query.searchByEmail, $options: "i" };
       }
       const result = await usersCollection.estimatedDocumentCount(filter);
       res.send({ result });
