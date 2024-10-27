@@ -52,6 +52,7 @@ async function run() {
       const currentPage = parseInt(query.currentPage);
       const numberOfCampPerPage = parseInt(query.numberOfCampPerPage);
       const sortData = query.sortData;
+      const currentData = new Date();
 
       let sortOption = {}
 
@@ -76,6 +77,8 @@ async function run() {
         filter.campLocation = { $regex: query.searchLocation, $options: "i" };
       }
 
+      filter.campTime = {$gte: currentData.toISOString()}
+
       const result = await campCollection
         .find(filter)
         .sort(sortOption)
@@ -89,6 +92,7 @@ async function run() {
 
     app.get("/get-total-camp-number", async (req, res) => {
       const query = req.query;
+      const currentDate = new Date();
 
       let filter = {};
       if (query.search) {
@@ -98,7 +102,8 @@ async function run() {
       if (query.searchLocation) {
         filter.campLocation = { $regex: query.searchLocation, $options: "i" };
       }
-
+      
+      filter.campTime = {$gte: currentDate.toISOString()}
       const totalCamp = await campCollection.countDocuments(filter);
       res.send({ totalCamp });
     });
