@@ -109,6 +109,7 @@ async function run() {
       res.send({ totalCamp });
     });
 
+    // get previous camp related api
     app.get("/previous-camp", async (req, res) => {
       const currentDate = new Date();
 
@@ -177,6 +178,63 @@ async function run() {
       res.send(result);
     });
 
+    // get my added camp count related api
+
+    app.get("/my-added-camp-count/:email", async (req, res) => {
+      const email = req.params.email;
+
+      const query = {
+        organizerEmail: email,
+      };
+
+      const result = await campCollection.countDocuments(query);
+      res.send({ result });
+    });
+
+    // get camp request related api
+
+    app.get("/manage-camp-request/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = {
+        organizerEmail: email,
+      };
+      const result = await participantDetailsCollection
+        .aggregate([
+          {
+            $addFields: { campIdAsObjectid: { $toObjectId: "$campId" } },
+          },
+          {
+            $lookup: {
+              from: "camp",
+              localField: "campIdAsObjectid",
+              foreignField: "_id",
+              as: "campDetails",
+            },
+          },
+          {
+            $addFields: {
+              campDetails: {$arrayElemAt: ["$campDetails",0]},
+            }
+          },
+          {
+            $match: {
+              organizerEmail: email
+            }
+          },
+          {
+            $sort: { _id: -1 },
+          },
+          {
+            $project: {
+              campIdAsObjectid: 0,
+              campId: 0,
+            },
+          },
+        ])
+        .toArray();
+      res.send(result);
+    });
+
     // update camp related api
 
     app.put("/update-camp/:id", async (req, res) => {
@@ -203,6 +261,20 @@ async function run() {
       const query = { _id: new ObjectId(id) };
 
       const result = await campCollection.deleteOne(query);
+      res.send(result);
+    });
+
+    // my registered camp related api
+
+    app.get("/my-registered-camp/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = {
+        participantEmail: email,
+      };
+      const result = await participantDetailsCollection
+        .find(query)
+        .sort({ _id: -1 })
+        .toArray();
       res.send(result);
     });
 
