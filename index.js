@@ -235,6 +235,34 @@ async function run() {
       res.send(result);
     });
 
+    // get camp request count related api
+
+    app.get("/manage-camp-request-count/:email", async (req, res) => {
+      const email = req.params.email;
+
+      const query = {
+        organizerEmail: email,
+      };
+
+      const result = await participantDetailsCollection.countDocuments(query);
+      res.send({ result });
+    });
+
+    // update confirmation status related api
+    app.patch("/update-confirmation-status/:id", async (req, res) => {
+      const id = req.params.id;
+      const status = req.body.status;
+      const filter = { _id: new ObjectId(id) };
+
+      const updateDoc = {
+        $set: {
+          confirmationStatus: status,
+        },
+      };
+      const result = await participantDetailsCollection.updateOne(filter, updateDoc);
+      res.send(result)
+    });
+
     // update camp related api
 
     app.put("/update-camp/:id", async (req, res) => {
