@@ -296,13 +296,32 @@ async function run() {
 
     app.get("/my-registered-camp/:email", async (req, res) => {
       const email = req.params.email;
-      const query = {
-        participantEmail: email,
-      };
-      const result = await participantDetailsCollection
-        .find(query)
-        .sort({ _id: -1 })
-        .toArray();
+      const result = await participantDetailsCollection.aggregate([
+        {
+          $match: {participantEmail: email}
+        },
+        {
+          $addFields: {campObjectId: {$toObjectId: "$campId"}}
+        },
+        {
+          $lookup:{
+            from: "camp",
+            localField: "campObjectId",
+            foreignField: "_id",
+            as: "campDetailsObject"
+          }
+        },
+        {
+          $project: {
+            campObjectId: 0,
+          }
+        },
+        {
+          $addFields: {
+            campDetails: {$arrayElemAt: ["$campDetailsObject",0]},
+          }
+        },
+      ]).toArray()
       res.send(result);
     });
 
