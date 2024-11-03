@@ -213,13 +213,13 @@ async function run() {
           },
           {
             $addFields: {
-              campDetails: {$arrayElemAt: ["$campDetails",0]},
-            }
+              campDetails: { $arrayElemAt: ["$campDetails", 0] },
+            },
           },
           {
             $match: {
-              organizerEmail: email
-            }
+              organizerEmail: email,
+            },
           },
           {
             $sort: { _id: -1 },
@@ -259,8 +259,11 @@ async function run() {
           confirmationStatus: status,
         },
       };
-      const result = await participantDetailsCollection.updateOne(filter, updateDoc);
-      res.send(result)
+      const result = await participantDetailsCollection.updateOne(
+        filter,
+        updateDoc
+      );
+      res.send(result);
     });
 
     // update camp related api
@@ -296,47 +299,50 @@ async function run() {
 
     app.get("/my-registered-camp/:email", async (req, res) => {
       const email = req.params.email;
-      const result = await participantDetailsCollection.aggregate([
-        {
-          $match: {participantEmail: email}
-        },
-        {
-          $addFields: {campObjectId: {$toObjectId: "$campId"}}
-        },
-        {
-          $lookup:{
-            from: "camp",
-            localField: "campObjectId",
-            foreignField: "_id",
-            as: "campDetailsObject"
-          }
-        },
-        {
-          $addFields: {
-            campDetailsObject: { $arrayElemAt: ["$campDetailsObject", 0] },
+      const result = await participantDetailsCollection
+        .aggregate([
+          {
+            $match: { participantEmail: email },
           },
-        },
-        {
-          $project: {
-            campObjectId: 0,
-          }
-        },
-        
-      ]).toArray()
+          {
+            $addFields: { campObjectId: { $toObjectId: "$campId" } },
+          },
+          {
+            $lookup: {
+              from: "camp",
+              localField: "campObjectId",
+              foreignField: "_id",
+              as: "campDetailsObject",
+            },
+          },
+          {
+            $addFields: {
+              campDetailsObject: { $arrayElemAt: ["$campDetailsObject", 0] },
+            },
+          },
+          {
+            $project: {
+              campObjectId: 0,
+            },
+          },
+        ])
+        .toArray();
       res.send(result);
     });
 
-    // count my added camp 
+    // count my added camp
 
-    app.get("/count-my-added-camp/:email", async(req, res) => {
+    app.get("/count-my-added-camp/:email", async (req, res) => {
       const email = req.params.email;
 
-      const query = {participantEmail: email}
+      const query = { participantEmail: email };
 
-      const result = await participantDetailsCollection.estimatedDocumentCount(query)
+      const result = await participantDetailsCollection.countDocuments(
+        query
+      );
 
-      res.send({result})
-    })
+      res.send({ result });
+    });
 
     // post user data in database related api created
 
