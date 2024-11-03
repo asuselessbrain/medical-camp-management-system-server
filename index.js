@@ -312,18 +312,31 @@ async function run() {
           }
         },
         {
+          $addFields: {
+            campDetailsObject: { $arrayElemAt: ["$campDetailsObject", 0] },
+          },
+        },
+        {
           $project: {
             campObjectId: 0,
           }
         },
-        {
-          $addFields: {
-            campDetails: {$arrayElemAt: ["$campDetailsObject",0]},
-          }
-        },
+        
       ]).toArray()
       res.send(result);
     });
+
+    // count my added camp 
+
+    app.get("/count-my-added-camp/:email", async(req, res) => {
+      const email = req.params.email;
+
+      const query = {participantEmail: email}
+
+      const result = await participantDetailsCollection.estimatedDocumentCount(query)
+
+      res.send({result})
+    })
 
     // post user data in database related api created
 
