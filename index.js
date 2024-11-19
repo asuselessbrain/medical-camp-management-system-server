@@ -1,6 +1,7 @@
 const express = require("express");
 var cors = require("cors");
 require("dotenv").config();
+const stripe = require("stripe")(process.env.STRIPE_SECRITE_KEY);
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const app = express();
 const port = 3000;
@@ -337,9 +338,7 @@ async function run() {
 
       const query = { participantEmail: email };
 
-      const result = await participantDetailsCollection.countDocuments(
-        query
-      );
+      const result = await participantDetailsCollection.countDocuments(query);
 
       res.send({ result });
     });
@@ -423,6 +422,22 @@ async function run() {
       const result = await usersCollection.deleteOne(query);
 
       res.send(result);
+    });
+
+    // payment methods
+
+    app.post("/create-payment-intent", async (req, res) => {
+      const { campFee } = req.body;
+
+      const amount = parseInt(campFee * 100);
+
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: amount,
+        currency: "BDT",
+        payment_method_types: ["card"],
+      });
+
+      res.send({ clientSecret: paymentIntent.client_sercret });
     });
 
     // Send a ping to confirm a successful connection
